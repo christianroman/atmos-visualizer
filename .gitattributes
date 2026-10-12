@@ -1,0 +1,18 @@
+# Text files are stored with LF; Windows batch files keep CRLF, which cmd.exe needs.
+* text=auto
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+
+# Unity's YAML (scenes, assets, settings, meta files) is text
+*.unity text
+*.asset text
+*.mat text
+*.meta text
+*.uss text
+*.shader text
+
+# binaries
+*.dll binary
+*.png binary
+*.jpg binary

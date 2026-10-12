@@ -1,0 +1,15 @@
+# Python packages for the reference checks in tools/ (render_check.py, allo_check.py, ...),
+# which compare the app's renderer with the EBU ADM Renderer (ear, the BS.2127 reference).
+# ear 2.1.0 pins old versions that no longer install on current Python, so install it on its own:
+#   python -m venv .venv
+#   .venv\Scripts\pip install --no-deps ear==2.1.0
+#   .venv\Scripts\pip install -r tools\requirements.txt
+# render_check.py also needs ffmpeg on PATH (it reads the audio with it).
+numpy
+scipy
+ruamel.yaml
+lxml
+multipledispatch
+attrs
+six
+setuptools<81   # ear imports pkg_resources, removed in setuptools 81

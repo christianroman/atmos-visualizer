@@ -1,0 +1,54 @@
+# ---- Unity: generated; rebuilt from Assets, Packages and ProjectSettings ----
+UnityProject/[Ll]ibrary/
+UnityProject/[Tt]emp/
+UnityProject/[Oo]bj/
+UnityProject/[Bb]uild/
+UnityProject/[Bb]uilds/
+UnityProject/[Ll]ogs/
+UnityProject/[Uu]ser[Ss]ettings/
+UnityProject/[Mm]emoryCaptures/
+UnityProject/[Rr]ecordings/
+UnityProject/*.csproj
+UnityProject/*.sln
+UnityProject/*.slnx
+UnityProject/*.user
+UnityProject/*.pidb
+UnityProject/*.pdb
+UnityProject/*.mdb
+UnityProject/*.opendb
+UnityProject/*.VC.db
+UnityProject/sysinfo.txt
+UnityProject/crashlytics-build.properties
+
+# ---- native plugin build output (the finished DLL is kept in Assets/Plugins) ----
+native/build/
+
+# ---- dependencies: libear is a submodule; Boost is downloaded by CMake ----
+external/_downloads/
+external/boost-*/
+
+# ---- tools ----
+.venv/
+__pycache__/
+*.pyc
+tools/cs/bin/
+
+# ---- private: never published ----
+# decoded film audio and video, test media
+media/
+# reports with film frames and recorded film audio, personal notes and assistant briefs
+docs/
+CONTEXT.md
+PROMPT.md
+CLAUDE.md
+.claude/
+# a personal launcher for a local test film
+run-viewer-rpo.cmd
+
+# ---- OS and editors ----
+Thumbs.db
+desktop.ini
+.DS_Store
+.vs/
+.vscode/
+.idea/

@@ -1,0 +1,3 @@
+[submodule "external/libear"]
+	path = external/libear
+	url = https://github.com/ebu/libear.git

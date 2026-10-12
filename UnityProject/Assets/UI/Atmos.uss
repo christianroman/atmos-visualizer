@@ -1,0 +1,208 @@
+/* Atmos Visualizer UI styles (UI Toolkit USS, a CSS subset).
+   Sizes are Windows "effective pixels": the panel scales them with Windows' display scaling,
+   so 14px here is the same size as body text in any Windows 11 app.
+   Type ramp (Windows 11): Caption 12, Body 14, Subtitle 20. Colours: Windows 11 dark theme. */
+
+.atmos-root {
+    flex-grow: 1;
+    font-size: 14px;
+    color: rgb(255, 255, 255);
+}
+
+.panel {
+    position: absolute;
+    background-color: rgba(32, 32, 32, 0.92);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.07);
+    padding: 10px 12px;
+}
+
+/* ---- text styles ---- */
+.caption { font-size: 12px; color: rgba(255, 255, 255, 0.62); margin: 0 8px 0 4px; }
+.caption-strong { font-size: 12px; -unity-font-style: bold; color: rgba(255, 255, 255, 0.78); margin-bottom: 6px; }
+.body { font-size: 14px; color: rgba(255, 255, 255, 0.79); white-space: normal; }
+.subtitle { font-size: 20px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+.hint { font-size: 12px; color: rgba(255, 255, 255, 0.62); white-space: normal; margin: 4px 0 10px 0; }
+.status { font-size: 12px; color: rgb(255, 196, 110); white-space: normal; margin-top: 6px; display: none; }
+
+/* ---- top bar ---- */
+.topbar {
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    height: 48px;
+    padding: 0 12px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.topbar-left { flex-direction: row; align-items: center; flex-shrink: 1; overflow: hidden; }
+.topbar-right { flex-direction: row; align-items: center; flex-shrink: 0; }
+.app-title { font-size: 14px; -unity-font-style: bold; color: rgb(96, 205, 255); margin-right: 14px; }
+.file { font-size: 14px; -unity-font-style: bold; color: rgb(255, 255, 255); -unity-text-overflow-position: end; text-overflow: ellipsis; overflow: hidden; }
+
+/* ---- info card (top left) and display controls (bottom left) ---- */
+/* labels here drop the theme's default margins and padding, so the rows sit tight like a list */
+.legend-dot { width: 10px; height: 10px; border-radius: 5px; margin: 0 6px 0 0; flex-shrink: 0; }
+.legend-dot--object { background-color: rgb(240, 242, 255); }  /* the objects' white in the 3D view */
+.legend-dot--bed { background-color: rgb(173, 97, 255); }      /* the bed channels' purple */
+.media-row { flex-direction: row; align-items: flex-start; margin: 0 0 2px 0; }
+.media-key { width: 100px; flex-shrink: 0; font-size: 12px; color: rgba(255, 255, 255, 0.62); margin: 2px 0 0 0; padding: 0; }
+.media-value-row { flex-direction: row; flex-wrap: wrap; align-items: center; flex-shrink: 1; }
+.media-value--inline { flex-grow: 0; }
+.media-sep { font-size: 14px; color: rgba(255, 255, 255, 0.62); margin: 0 8px; padding: 0; }
+.media-value { flex-grow: 1; flex-shrink: 1; font-size: 14px; color: rgba(255, 255, 255, 0.86); white-space: normal; margin: 0; padding: 0; }
+.info {
+    left: 12px;
+    top: 72px;
+    max-width: 470px;
+}
+.display {
+    left: 12px;
+    bottom: 84px;
+    width: 470px;
+}
+.slider-row { flex-direction: row; align-items: center; margin: 2px 0; }
+.slider-label { width: 56px; font-size: 14px; color: rgba(255, 255, 255, 0.79); }
+.camera-slider { flex-grow: 1; margin: 0; }
+.toggle-line { flex-direction: row; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.toggle-line > .btn { margin: 2px 4px 2px 0; }
+
+/* ---- layout picker (right) ---- */
+.layouts {
+    right: 12px;
+    top: 72px;
+    bottom: 84px;
+    width: 300px;
+}
+.preset-scroll { flex-grow: 1; }
+.preset-card {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.04);
+}
+.preset-card:hover { background-color: rgba(255, 255, 255, 0.08); }
+.preset-card--selected {
+    border-color: rgb(96, 205, 255);
+    background-color: rgba(96, 205, 255, 0.14);
+}
+.preset-card--busy { opacity: 0.6; }
+.preset-diagram { width: 48px; height: 48px; flex-shrink: 0; margin-right: 10px; }
+.preset-text { flex-shrink: 1; flex-grow: 1; }
+.preset-name { font-size: 14px; -unity-font-style: bold; color: rgb(255, 255, 255); }
+.preset-desc { font-size: 12px; color: rgba(255, 255, 255, 0.70); white-space: normal; }
+.preset-counts { font-size: 12px; color: rgb(96, 205, 255); }
+
+/* ---- transport (bottom) ---- */
+.transport {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    height: 60px;
+    flex-direction: row;
+    align-items: center;
+}
+.timeline { flex-grow: 1; margin: 0 10px; }
+.time { font-size: 20px; -unity-font-style: bold; min-width: 112px; -unity-text-align: middle-center; }
+.duration { font-size: 14px; color: rgba(255, 255, 255, 0.62); min-width: 52px; }
+.volume-label { font-size: 12px; color: rgba(255, 255, 255, 0.79); min-width: 92px; -unity-text-align: middle-right; }
+.volume { width: 140px; margin-left: 6px; }
+
+/* ---- buttons (Windows 11 "subtle" controls) ---- */
+.btn {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.07);
+    color: rgb(255, 255, 255);
+    padding: 5px 11px;
+    margin: 0 2px;
+    font-size: 14px;
+}
+.btn:hover { background-color: rgba(255, 255, 255, 0.084); }
+.btn:active { background-color: rgba(255, 255, 255, 0.033); }
+.btn--on { background-color: rgba(96, 205, 255, 0.30); border-color: rgba(96, 205, 255, 0.55); }
+.btn--primary { background-color: rgb(96, 205, 255); color: rgb(0, 0, 0); -unity-font-style: bold; border-width: 0; }
+.btn--primary:hover { background-color: rgb(120, 214, 255); }
+.btn--segment { margin: 0 1px; }
+.play-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: rgb(96, 205, 255);
+    border-width: 0;
+    padding: 11px;
+    margin: 0 8px;
+}
+.play-button:hover { background-color: rgb(120, 214, 255); }
+.play-icon { flex-grow: 1; }
+.divider { width: 1px; height: 28px; background-color: rgba(255, 255, 255, 0.10); margin: 0 8px; }
+
+/* ---- movie preparation panel (centre) ---- */
+.prep {
+    left: 50%;
+    top: 80px;
+    width: 560px;
+    margin-left: -280px;
+    padding: 14px 16px;
+    background-color: rgba(32, 32, 32, 0.98);
+}
+.prep-title { font-size: 14px; -unity-font-style: bold; white-space: normal; margin-bottom: 10px; }
+.prep-row { flex-direction: row; align-items: center; margin: 3px 0; }
+.prep-step { width: 200px; font-size: 14px; color: rgba(255, 255, 255, 0.86); }
+.prep-bar {
+    flex-grow: 1;
+    height: 6px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.10);
+    margin: 0 10px;
+    overflow: hidden;
+}
+.prep-fill { height: 100%; width: 0%; border-radius: 3px; background-color: rgb(96, 205, 255); }
+.prep-fill--failed { background-color: rgb(255, 120, 100); }
+.prep-state { width: 140px; font-size: 12px; color: rgba(255, 255, 255, 0.62); -unity-text-align: middle-right; }
+.prep-note { font-size: 12px; color: rgba(255, 255, 255, 0.62); white-space: normal; margin-top: 10px; }
+.prep-error { font-size: 14px; color: rgb(255, 153, 164); white-space: normal; margin-top: 6px; }
+.prep-buttons { flex-direction: row; justify-content: flex-end; margin-top: 10px; }
+
+/* ---- welcome card (centre, until a file is opened) ---- */
+.welcome {
+    left: 50%;
+    top: 22%;
+    width: 440px;
+    margin-left: -220px;
+    padding: 16px 18px;
+    background-color: rgba(32, 32, 32, 0.96);
+}
+.welcome-open { align-self: flex-start; margin: 2px 0 0 0; padding: 6px 18px; }
+.welcome-recent-caption { margin-top: 16px; }
+.recent-item {
+    -unity-text-align: middle-left;
+    margin: 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- labels over the 3D speakers ---- */
+.label-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+.speaker-label {
+    position: absolute;
+    font-size: 12px;
+    color: rgb(240, 244, 250);
+    background-color: rgba(20, 20, 20, 0.70);
+    border-radius: 4px;
+    padding: 0 4px;
+}

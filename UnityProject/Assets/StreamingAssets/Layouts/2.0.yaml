@@ -1,0 +1,25 @@
+# Speaker layout preset for Atmos Visualizer. Add your own: copy a file, edit it, restart the app.
+#  name       short name shown in the 3D view (must be unique)
+#  label      ITU-R BS.2051 speaker label; bed channels (e.g. the LFE) are routed by it
+#  azimuth    degrees, positive = LEFT (ADM convention); elevation degrees, positive = up
+#  position   where the speaker sits in the room box, which is what objects are panned with:
+#             x -1 left .. +1 right, y -1 rear .. +1 front, z 0 ear level .. 1 ceiling
+#  bs2051     optional: the BS.2051 layout this preset is identical to
+#  Positions here come from the BS.2127 reference renderer's own tables, except the LFE's:
+#  objects are never panned to the LFE, so its position only sets where the sub is drawn
+#  (front centre, on the floor).
+name: 2.0
+description: Stereo, what your PC or laptop speakers play
+order: 10
+bs2051: 0+2+0   # identical to this BS.2051 layout, so libear uses its standard bed-channel rules
+speakers:
+  - name: L
+    label: M+030
+    azimuth: 30
+    elevation: 0
+    position: [-1, 1, 0]
+  - name: R
+    label: M-030
+    azimuth: -30
+    elevation: 0
+    position: [1, 1, 0]
