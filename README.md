@@ -7,6 +7,8 @@ The movie plays on the room's screen. Every object flies around the room as a do
 speaker lights up with the level the renderer sends it. You hear a stereo render through your PC
 speakers.
 
+![A film's Atmos objects flying around an 11.1.8 room, with the film on the room's screen](images/overview.jpg)
+
 Seeing a mix like this usually takes a high-end home-theater processor with an object viewer, or
 professional mixing software. This is a free, open-source app for a Windows PC.
 
@@ -32,6 +34,16 @@ may place sound somewhat differently.
   seated listener on a couch for scale.
 - **Five views** (Overview, Seat, Top, Front, Side), plus free orbit and zoom.
 - **Media details**: object and bed counts, format, bitrate, video, renderer.
+
+## Screenshots
+
+<p>
+  <a href="images/seat.jpg"><img src="images/seat.jpg" width="32%" alt="Seat view: a 7.1.4 room from just behind the listener, with the film on the screen"></a>
+  <a href="images/levels.jpg"><img src="images/levels.jpg" width="32%" alt="An 11.1.8 room with Level colors and each speaker's level in dB"></a>
+  <a href="images/top.jpg"><img src="images/top.jpg" width="32%" alt="Top view of a 9.1.6 room"></a>
+</p>
+
+*Seat view on 7.1.4 · Level colors and dB readouts on 11.1.8 · Top view on 9.1.6 (click to enlarge)*
 
 ## Supported files
 
