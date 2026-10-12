@@ -7,7 +7,7 @@ The movie plays on the room's screen. Every object flies around the room as a do
 speaker lights up with the level the renderer sends it. You hear a stereo render through your PC
 speakers.
 
-![A film's Atmos objects flying around an 11.1.8 room, with the film on the room's screen](images/overview.jpg)
+https://github.com/user-attachments/assets/d6464040-1aea-45a4-abd6-28897d7a1ef1
 
 Seeing a mix like this usually takes a high-end home-theater processor with an object viewer, or
 professional mixing software. This is a free, open-source app for a Windows PC.
