@@ -66,22 +66,23 @@ Not supported:
 
 - Windows 10 or 11, 64-bit.
 - A GPU that decodes 4K HEVC (any recent NVIDIA, AMD or Intel GPU) for smooth 4K playback.
-- Three free tools, needed to open movies:
+- Two free tools to install, needed to open movies. The third, **truehdd** (the open TrueHD
+  decoder that turns the Atmos track into objects), comes with the app.
 
 | Tool | Used for | How to get it |
 |---|---|---|
 | **ffmpeg** (with ffprobe) | Reading the movie and playing its picture | `winget install Gyan.FFmpeg` |
-| **truehdd** | Decoding the TrueHD Atmos track into objects | The Windows zip from [truehdd's releases](https://github.com/truehdd/truehdd/releases) |
 | **MKVToolNix** (mkvextract) | Extracting the audio track from Matroska files | `winget install MoritzBunkus.MKVToolNix` |
+| **truehdd** 0.6.2 | Decoding the TrueHD Atmos track into objects | Included, in `StreamingAssets/Tools/truehdd` |
 
-The app looks for each tool in its settings file first, then on `PATH`, then in the tool's usual
-install folder (MKVToolNix in Program Files, truehdd in Cargo's `bin` folder). If one is missing,
-the app says which. To use a tool from anywhere else, such as the unzipped truehdd, list it in
+The app looks for each tool in its settings file first, then among the tools that come with it,
+then on `PATH`, then in the tool's usual install folder (MKVToolNix in Program Files). If one is
+missing, the app says which. To use a tool from anywhere else, list it in
 `%USERPROFILE%\AppData\LocalLow\AtmosVisualizer\Atmos Visualizer\settings.yaml`, one per line
 (create the file if it isn't there):
 
 ```yaml
-truehdd: D:\tools\truehdd\truehdd.exe
+mkvextract: D:\Apps\MKVToolNix\mkvextract.exe
 ```
 
 The names are `ffmpeg`, `ffprobe`, `mkvextract` and `truehdd`.
@@ -122,7 +123,7 @@ git submodule update --init --recursive
    `UnityProject/Builds/Viewer/AtmosVisualizer.exe`: run it directly or with `run-viewer.cmd`.
    The whole `Builds/Viewer` folder is the app, so copy the folder to move it. To try it inside
    Unity instead, open `Assets/Scenes/Viewer.unity` and press Play.
-6. Install the three tools above, then **Open…** a movie.
+6. Install ffmpeg and MKVToolNix (above), then **Open…** a movie.
 
 The scene is generated from code (`Assets/Editor/ViewerSetup.cs`). After changing that code, run
 **Atmos → Viewer → Build Scene** to regenerate it.
@@ -186,6 +187,7 @@ MKV ── mkvextract ──► TrueHD ── truehdd ──► Atmos objects + 
 | `UnityProject/Assets/AtmosEngine` | Plain C#: DAMF parsing, gains over time, audio streaming, movie preparation, video decoding |
 | `UnityProject/Assets/Scripts` | The app: controller, UI (UI Toolkit), 3D room, camera |
 | `native/` | `ear_shim.dll`: a C API over libear, plus BS.2127's room-relative panner ported to C++ from the EBU ADM Renderer |
+| `UnityProject/Assets/StreamingAssets` | Speaker layouts (YAML) and the bundled truehdd, copied into the built app as they are |
 | `external/libear` | libear (submodule) |
 | `tools/` | Checks against the EBU ADM Renderer (`ear`, Python; see `tools/requirements.txt`) and small C# console tools |
 

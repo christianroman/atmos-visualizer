@@ -1,7 +1,8 @@
 // Finds and runs the command-line tools the app uses to prepare a movie: ffprobe and ffmpeg
 // (probe, video proxy), mkvextract (TrueHD track out of an MKV) and truehdd (TrueHD -> DAMF).
 //
-// Each tool is looked up in an optional settings file first, then on PATH, then in its usual
+// Each tool is looked up in an optional settings file first, then among the tools that come with
+// the app (Tools\<name>\<name>.exe in StreamingAssets: truehdd), then on PATH, then in its usual
 // install folder. The settings file is plain "name: path" lines, e.g.
 //   truehdd: D:\tools\truehdd.exe
 // It lives where Unity keeps the app's data (Application.persistentDataPath):
@@ -28,7 +29,8 @@ namespace AtmosEngine
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "AppData", "LocalLow", "AtmosVisualizer", "Atmos Visualizer", "settings.yaml");
 
-        public static ExternalTools Find(string settingsFile = null)
+        /// <param name="bundledDir">The folder of tools that come with the app, or null.</param>
+        public static ExternalTools Find(string settingsFile = null, string bundledDir = null)
         {
             settingsFile = settingsFile ?? DefaultSettingsFile;
             var overrides = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -45,16 +47,22 @@ namespace AtmosEngine
             string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
             return new ExternalTools
             {
-                Ffmpeg = Locate("ffmpeg", overrides),
-                Ffprobe = Locate("ffprobe", overrides),
-                Mkvextract = Locate("mkvextract", overrides, Path.Combine(programFiles, "MKVToolNix", "mkvextract.exe")),
-                Truehdd = Locate("truehdd", overrides, Path.Combine(home, ".cargo", "bin", "truehdd.exe")),   // cargo install
+                Ffmpeg = Locate("ffmpeg", overrides, bundledDir),
+                Ffprobe = Locate("ffprobe", overrides, bundledDir),
+                Mkvextract = Locate("mkvextract", overrides, bundledDir, Path.Combine(programFiles, "MKVToolNix", "mkvextract.exe")),
+                Truehdd = Locate("truehdd", overrides, bundledDir, Path.Combine(home, ".cargo", "bin", "truehdd.exe")),   // cargo install
             };
         }
 
-        static string Locate(string name, Dictionary<string, string> overrides, params string[] usual)
+        static string Locate(string name, Dictionary<string, string> overrides, string bundledDir, params string[] usual)
         {
             if (overrides.TryGetValue(name, out var o) && File.Exists(o)) return o;
+            // the copy that comes with the app, a tested version, before any other on PATH
+            if (bundledDir != null)
+            {
+                var b = Path.Combine(bundledDir, name, name + ".exe");
+                if (File.Exists(b)) return b;
+            }
             foreach (var dir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
             {
                 try

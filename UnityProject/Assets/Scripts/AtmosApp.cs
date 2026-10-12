@@ -98,7 +98,8 @@ public sealed class AtmosApp : MonoBehaviour
         Application.targetFrameRate = 60;
         AudioSettings.GetDSPBufferSize(out int bufferLength, out int buffers);
         OutputLatencySeconds = (1 + buffers) * (double)bufferLength / AudioSettings.outputSampleRate;
-        tools = ExternalTools.Find(Path.Combine(Application.persistentDataPath, "settings.yaml"));
+        tools = ExternalTools.Find(Path.Combine(Application.persistentDataPath, "settings.yaml"),
+            Path.Combine(Application.streamingAssetsPath, "Tools"));   // truehdd comes with the app
 
         var errors = new List<string>();
         Presets = LayoutPreset.LoadAll(Path.Combine(Application.streamingAssetsPath, "Layouts"), errors);
