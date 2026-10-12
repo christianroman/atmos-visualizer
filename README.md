@@ -1,50 +1,84 @@
 # Atmos Visualizer
 
-A Windows app that shows what a Dolby Atmos soundtrack does in a home theater. The film plays
-on a screen in a 3D room, the Atmos objects move around as dots, and every speaker of the layout
-you pick lights up with the level the renderer actually sends it. You hear a stereo render
-through your PC speakers.
+**See inside a movie's Dolby Atmos mix.** Atmos Visualizer takes the Dolby TrueHD Atmos track
+straight from a movie file, decodes every audio object and how it moves, and renders the whole
+film into a virtual home theater with the speaker layout of your choice, from 5.1.2 to 11.1.8.
+The movie plays on the room's screen. Every object flies around the room as a dot, and every
+speaker lights up with the level the renderer sends it. You hear a stereo render through your PC
+speakers.
 
-It renders with **libear**, the C++ core of the EBU's reference renderer for
-**ITU-R BS.2127**, using BS.2127's room-relative panning. It is not Dolby's renderer, so a Dolby or
-Trinnov processor may place sound somewhat differently.
+Seeing a mix like this usually takes a high-end home-theater processor with an object viewer, or
+professional mixing software. This is a free, open-source app for a Windows PC.
+
+It renders with **libear**, the C++ core of the EBU's reference renderer for **ITU-R BS.2127**,
+using BS.2127's room-relative panning. It is not Dolby's renderer, so a Dolby-licensed processor
+may place sound somewhat differently.
+
+> **Windows only, for now.** It runs on Windows 10 and 11, 64-bit. It's built with Unity, and
+> there's no ready-made download yet, so you build it yourself: see
+> [Building and running](#building-and-running).
 
 ## What it shows
 
-- **Movies straight from MKV** with a Dolby TrueHD Atmos track (as on UHD Blu-ray). The Atmos
-  objects are decoded once and cached; the picture plays live from the original file (GPU
-  decoding, HDR10 tone-mapped).
-- **Dolby Atmos masters** (`.atmos`, the DAMF format). Open a film first, then a `.atmos` mix of
-  it, to see the mix with the film's picture.
+- **Movies straight from their files**, when they have a Dolby TrueHD Atmos track (as on UHD
+  Blu-ray). The Atmos objects are decoded once and cached; the picture plays live from the
+  original file (GPU decoding, HDR10 tone-mapped).
+- **Dolby Atmos masters** (`.atmos`), on their own or with a film's picture.
 - **Eleven speaker layouts**, switchable while playing: 2.0, 5.1, 7.1, 5.1.2 (top middle or front
   height), 5.1.4, 7.1.2, 7.1.4, 9.1.4, 9.1.6, 11.1.8. You can add your own (see below).
 - **Speakers** glow with their rendered level. Optionally they show the level in dB, or use
   green-to-red level colors that follow the volume, like a home theater processor's display.
 - **Objects** as white dots and **bed channels** (such as the LFE) as fixed purple dots, with a
   seated listener on a couch for scale.
+- **Five views** (Overview, Seat, Top, Front, Side), plus free orbit and zoom.
 - **Media details**: object and bed counts, format, bitrate, video, renderer.
+
+## Supported files
+
+| What | File types | Notes |
+|---|---|---|
+| Movies with a **Dolby TrueHD Atmos** track | `.mkv`; also `.mka` `.m2ts` `.ts` `.mp4` `.m4v` `.mov`, not yet tested | Decoded once and cached. The picture plays from the same file. |
+| **Dolby Atmos master files** (DAMF) | `.atmos`, with its `.atmos.metadata` and `.atmos.audio` beside it | To see one with a film's picture, open the film first and then the `.atmos` (same length), or select both in **Open…** when they're in one folder. |
+
+Not supported:
+
+- **Dolby Digital Plus Atmos** (E-AC-3 JOC), used by streaming services and most demo clips. No
+  open decoder can read its objects; the app tells you when you open such a file.
+- Other immersive formats, such as DTS:X, Auro-3D or ADM BWF files.
 
 ## Requirements
 
-- Windows 10 or 11, 64-bit. A GPU that decodes 4K HEVC (any recent NVIDIA, AMD or Intel GPU) for
-  smooth 4K playback.
-- Three free tools for opening movies. The app finds them on `PATH`:
-  - **ffmpeg** (ffmpeg and ffprobe): `winget install Gyan.FFmpeg`
-  - **MKVToolNix** (mkvextract): `winget install MoritzBunkus.MKVToolNix`
-  - **truehdd**, the open TrueHD decoder: download it from
-    [its releases](https://github.com/truehdd/truehdd/releases), or build it with Rust
-    (`cargo build --release` in a clone of https://github.com/truehdd/truehdd).
+### To run it
 
-If a tool isn't on `PATH`, give its location in
-`%USERPROFILE%\AppData\LocalLow\AtmosVisualizer\Atmos Visualizer\settings.yaml`, one per line:
+- Windows 10 or 11, 64-bit.
+- A GPU that decodes 4K HEVC (any recent NVIDIA, AMD or Intel GPU) for smooth 4K playback.
+- Three free tools, needed to open movies:
+
+| Tool | Used for | How to get it |
+|---|---|---|
+| **ffmpeg** (with ffprobe) | Reading the movie and playing its picture | `winget install Gyan.FFmpeg` |
+| **truehdd** | Decoding the TrueHD Atmos track into objects | The Windows zip from [truehdd's releases](https://github.com/truehdd/truehdd/releases) |
+| **MKVToolNix** (mkvextract) | Extracting the audio track from Matroska files | `winget install MoritzBunkus.MKVToolNix` |
+
+The app looks for each tool in its settings file first, then on `PATH`, then in the tool's usual
+install folder (MKVToolNix in Program Files, truehdd in Cargo's `bin` folder). If one is missing,
+the app says which. To use a tool from anywhere else, such as the unzipped truehdd, list it in
+`%USERPROFILE%\AppData\LocalLow\AtmosVisualizer\Atmos Visualizer\settings.yaml`, one per line
+(create the file if it isn't there):
 
 ```yaml
-truehdd: D:\tools\truehdd.exe
+truehdd: D:\tools\truehdd\truehdd.exe
 ```
 
-Only TrueHD Atmos can be visualized. Dolby Digital Plus Atmos (streaming services, most demo
-clips) carries its objects in a form no open decoder can read; the app explains this when you
-open such a file.
+The names are `ffmpeg`, `ffprobe`, `mkvextract` and `truehdd`.
+
+### To build it
+
+- **Unity 6000.3.26f1**, the version it's built and tested with, through Unity Hub. A free Unity
+  Personal license is enough, and the default Windows install has everything the project needs.
+- **Git**, to get the code and its submodules.
+- Optional: **Visual Studio 2022** or later with the **Desktop development with C++** workload,
+  only to rebuild the native plugin, which comes prebuilt.
 
 ## Getting the code
 
@@ -62,20 +96,27 @@ git submodule update --init --recursive
 
 ## Building and running
 
-1. Install **Unity 6000.3.26f1** with Unity Hub (Windows build support is included).
-2. In Unity Hub choose **Add → Add project from disk** and pick the `UnityProject` folder.
-3. Open `Assets/Scenes/Viewer.unity` and press Play to try it in the editor, or build the app with
-   the menu **Atmos → Viewer → Build Player**. That writes
-   `UnityProject/Builds/Viewer/AtmosVisualizer.exe`; `run-viewer.cmd` starts it.
+1. Install [Unity Hub](https://unity.com/download) and sign in. Unity Personal is free.
+2. Install Unity **6000.3.26f1**: paste `unityhub://6000.3.26f1/de8167e7440c` into your browser's
+   address bar to open it in Unity Hub, or find it in the
+   [Unity download archive](https://unity.com/releases/editor/archive). The default modules are
+   enough.
+3. Get the code (above).
+4. In Unity Hub, choose **Add → Add project from disk**, pick the `UnityProject` folder, and open
+   it. The first import takes a few minutes.
+5. Build the app with the menu **Atmos → Viewer → Build Player**. It writes
+   `UnityProject/Builds/Viewer/AtmosVisualizer.exe`: run it directly or with `run-viewer.cmd`.
+   The whole `Builds/Viewer` folder is the app, so copy the folder to move it. To try it inside
+   Unity instead, open `Assets/Scenes/Viewer.unity` and press Play.
+6. Install the three tools above, then **Open…** a movie.
 
 The scene is generated from code (`Assets/Editor/ViewerSetup.cs`). After changing that code, run
 **Atmos → Viewer → Build Scene** to regenerate it.
 
 The native plugin (`ear_shim.dll`: libear plus the room-relative panner) comes prebuilt in
-`UnityProject/Assets/Plugins/x86_64`. To rebuild it you need Visual Studio 2022 or later with the
-**Desktop development with C++** workload. Then run:
+`UnityProject/Assets/Plugins/x86_64`. To rebuild it, with Visual Studio installed, run:
 
-```bash
+```bat
 native\build.cmd
 ```
 
@@ -88,12 +129,22 @@ headers libear needs (about 30 MB, checked against its SHA-256).
   movie the first time takes about a minute per 20 minutes of film; after that it opens at once.
   The decoded audio is cached in `%LOCALAPPDATA%\AtmosVisualizer\Cache` (about 100 MB per minute
   of film); delete that folder to free the space.
-- **Speaker layout**: click a card on the right, or press `[` and `]`.
+- **Speaker layout**: click a card on the right, or press `[` and `]` (or Page Up and Page Down).
 - **Camera**: drag to orbit, scroll to zoom, or use Rotate and Zoom. The view buttons are
   Overview, Seat, Top, Front and Side; click Side again for the other side.
 - **Display**: Show (Speakers, Objects, Labels, Couch) and Levels (dB, Colors).
+- **Volume** sets what you hear; the Level colors follow it.
 - **Keys**: `Space` plays or pauses, `←` and `→` jump 5 s (30 s with `Shift`), and `Home` goes to
   the start.
+
+### Command line
+
+```bat
+AtmosVisualizer.exe -open "D:\Movies\Movie.mkv" -layout 9.1.6
+```
+
+- `-open <file> [<file>]` opens a movie, a `.atmos`, or a `.atmos` with a movie for its picture.
+- `-layout <name>` starts with that speaker layout.
 
 ### Your own speaker layout
 
@@ -123,6 +174,10 @@ MKV ── mkvextract ──► TrueHD ── truehdd ──► Atmos objects + 
 | `native/` | `ear_shim.dll`: a C API over libear, plus BS.2127's room-relative panner ported to C++ from the EBU ADM Renderer |
 | `external/libear` | libear (submodule) |
 | `tools/` | Checks against the EBU ADM Renderer (`ear`, Python; see `tools/requirements.txt`) and small C# console tools |
+
+The app also has scripted checks (`-phase1test`, `-movietest`, `-uitest`). They run on your own
+test media; the comments at the top of `UnityProject/Assets/Scripts/Phase1Test.cs` explain what
+each one needs.
 
 ## License
 
