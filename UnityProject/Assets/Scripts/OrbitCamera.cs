@@ -52,7 +52,9 @@ public sealed class OrbitCamera : MonoBehaviour
     {
         switch (name)
         {
-            case "Seat": Go(0, 24, 5.2f, new Vector3(0, 1.3f, 0.6f)); break;   // high enough to see the sub over the listener's head
+            // low, from just behind the back wall: the screen and speakers about as the listener
+            // sees them, with the head just under the picture (and in front of the sub)
+            case "Seat": Go(0, 10, 5.6f, new Vector3(0, 1.4f, 1.0f)); break;
             case "Top": Go(0, 89, 12f, new Vector3(0, 0.6f, 0)); break;
             case "Front": Go(180, 12, 12f, new Vector3(0, 1.3f, 0)); break;
             case "Side":
@@ -65,7 +67,8 @@ public sealed class OrbitCamera : MonoBehaviour
         lastView = name;
     }
 
-    void Go(float yaw, float pitch, float distance, Vector3 target)
+    /// <summary>Glide to a pose: yaw and pitch in degrees, distance in metres from the target.</summary>
+    public void Go(float yaw, float pitch, float distance, Vector3 target)
     {
         // take the short way round from wherever the user has dragged to
         targetYaw = Yaw + Mathf.DeltaAngle(Yaw, yaw);
