@@ -199,7 +199,7 @@ public sealed class AtmosUI : MonoBehaviour
         var levels = ToggleLine(p, "Levels");
         levels.Add(Toggle("dB", false, on => { ShowLevels = on; LevelsToggled?.Invoke(on); }, "Add each speaker's level in dB to its name"));
         levelColorsButton = Toggle("Colors", false, on => LevelColorsToggled?.Invoke(on),
-            "Speakers from green (quiet) to red (loud), like a Trinnov speaker display. Follows the volume setting.");
+            "Speakers from green (quiet) to red (loud), like a home theater processor's speaker display. Follows the volume setting.");
         levels.Add(levelColorsButton);
         root.Add(p);
     }

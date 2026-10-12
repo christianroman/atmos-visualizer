@@ -12,7 +12,7 @@
 //  Level colors, Volume) and record what each did, with screenshots.
 // The test files come from environment variables (read-only; the app only reads them):
 //   ATMOS_TEST_RPO_DIR    folder with RPO.atmos and its edited variants (RPO_s030.atmos, ...)
-//   ATMOS_TEST_RPO_MOVIE  the Ready Player One MKV those were decoded from
+//   ATMOS_TEST_RPO_MOVIE  the MKV those were decoded from
 //   ATMOS_TEST_MEDIA_DIR  folder with the ceil8d_e16 re-encode used by the Phase 1 checks
 
 using System;
