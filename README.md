@@ -38,12 +38,14 @@ may place sound somewhat differently.
 ## Screenshots
 
 <p>
-  <a href="images/seat.jpg"><img src="images/seat.jpg" width="32%" alt="Seat view: a 7.1.4 room from just behind the listener, with the film on the screen"></a>
-  <a href="images/levels.jpg"><img src="images/levels.jpg" width="32%" alt="An 11.1.8 room with Level colors and each speaker's level in dB"></a>
-  <a href="images/top.jpg"><img src="images/top.jpg" width="32%" alt="Top view of a 9.1.6 room"></a>
+  <a href="images/overview.jpg"><img src="images/overview.jpg" width="49%" alt="A film's Atmos objects flying around an 11.1.8 room, with the film on the room's screen"></a>
+  <a href="images/seat.jpg"><img src="images/seat.jpg" width="49%" alt="Seat view: a 7.1.4 room from just behind the listener, with the film on the screen"></a>
+  <a href="images/levels.jpg"><img src="images/levels.jpg" width="49%" alt="An 11.1.8 room with Level colors and each speaker's level in dB"></a>
+  <a href="images/top.jpg"><img src="images/top.jpg" width="49%" alt="Top view of a 9.1.6 room"></a>
 </p>
 
-*Seat view on 7.1.4 · Level colors and dB readouts on 11.1.8 · Top view on 9.1.6 (click to enlarge)*
+*Overview on 11.1.8 · Seat view on 7.1.4 · Level colors and dB readouts on 11.1.8 · Top view on
+9.1.6 (click to enlarge)*
 
 ## Supported files
 
