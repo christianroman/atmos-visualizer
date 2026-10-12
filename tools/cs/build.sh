@@ -17,7 +17,7 @@ if [ -z "${UNITY_DATA:-}" ]; then
     [ -d "$d" ] && UNITY_DATA="$d" && break
   done
 fi
-: "${UNITY_DATA:?set UNITY_DATA to your Unity 6000.3.26f1 editor's Editor/Data folder}"
+: "${UNITY_DATA:?set UNITY_DATA to the Editor/Data folder of your Unity 6000.3.26f1 editor}"
 OUT="$HERE/bin"
 mkdir -p "$OUT"
 
