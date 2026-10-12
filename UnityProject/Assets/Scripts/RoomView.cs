@@ -239,6 +239,34 @@ public sealed class RoomView : MonoBehaviour
              Quaternion.FromToRotation(Vector3.up, d.normalized), color);
     }
 
+    // The room's outline lines have a fixed width in metres, so one passing close to the camera
+    // looks like a thick bar across the view (orbiting near a wall, the Seat view). Lines fade
+    // out as the camera comes within NearFadeFar metres of them.
+    const float NearFadeNear = 0.5f, NearFadeFar = 1.8f;
+    readonly List<(LineRenderer line, Vector3[] points, Color color)> lines = new List<(LineRenderer, Vector3[], Color)>();
+
+    void LateUpdate()
+    {
+        var cam = Camera.main;
+        if (cam == null) return;
+        Vector3 eye = cam.transform.position;
+        foreach (var (line, points, color) in lines)
+        {
+            float d = float.MaxValue;
+            for (int i = 0; i + 1 < points.Length; i++) d = Mathf.Min(d, DistanceToSegment(eye, points[i], points[i + 1]));
+            var c = color;
+            c.a *= Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(NearFadeNear, NearFadeFar, d));
+            if (line.startColor != c) line.startColor = line.endColor = c;
+        }
+    }
+
+    static float DistanceToSegment(Vector3 p, Vector3 a, Vector3 b)
+    {
+        Vector3 ab = b - a;
+        float t = Mathf.Clamp01(Vector3.Dot(p - a, ab) / Mathf.Max(1e-6f, ab.sqrMagnitude));
+        return Vector3.Distance(p, a + t * ab);
+    }
+
     void Line(string name, Color color, float width, params Vector3[] points)
     {
         var go = new GameObject(name);
@@ -253,6 +281,7 @@ public sealed class RoomView : MonoBehaviour
         lr.numCapVertices = 2;
         lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         lr.receiveShadows = false;
+        lines.Add((lr, points, color));
     }
 
     // ---- speakers ---------------------------------------------------------------------------
