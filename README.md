@@ -51,7 +51,7 @@ open such a file.
 The renderer, libear, is a git submodule (with its own submodules), so clone recursively:
 
 ```bash
-git clone --recursive https://github.com/<account>/atmos-visualizer.git
+git clone --recursive https://github.com/christianroman/atmos-visualizer.git
 ```
 
 If you already cloned without `--recursive`:
