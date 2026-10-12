@@ -4,11 +4,13 @@
 *.bat text eol=crlf
 *.sh text eol=lf
 
-# Unity's YAML (scenes, assets, settings, meta files) is text
-*.unity text
-*.asset text
-*.mat text
-*.meta text
+# Unity writes its YAML (scenes, assets, settings, meta files) with LF; keep LF in the working
+# copy too, so saving in Unity doesn't make every file look changed on Windows
+*.unity text eol=lf
+*.asset text eol=lf
+*.mat text eol=lf
+*.meta text eol=lf
+*.prefab text eol=lf
 *.uss text
 *.shader text
 

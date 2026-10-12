@@ -68,6 +68,9 @@ git submodule update --init --recursive
    the menu **Atmos → Viewer → Build Player**. That writes
    `UnityProject/Builds/Viewer/AtmosVisualizer.exe`; `run-viewer.cmd` starts it.
 
+The scene is generated from code (`Assets/Editor/ViewerSetup.cs`). After changing that code, run
+**Atmos → Viewer → Build Scene** to regenerate it.
+
 The native plugin (`ear_shim.dll`: libear plus the room-relative panner) comes prebuilt in
 `UnityProject/Assets/Plugins/x86_64`. To rebuild it you need Visual Studio 2022 or later with the
 **Desktop development with C++** workload. Then run:

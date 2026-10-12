@@ -37,6 +37,13 @@ FetchContent_MakeAvailable(boost_headers)
 set(BOOST_ROOT ${boost_headers_SOURCE_DIR})
 set(Boost_NO_SYSTEM_PATHS ON)
 
+# Deterministic builds: no timestamps in the objects or the DLL, so the same source always gives
+# the identical ear_shim.dll and a rebuild doesn't show up as a change in git.
+if(MSVC)
+  add_compile_options(/Brepro)
+  add_link_options(/Brepro)
+endif()
+
 set(EAR_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 set(EAR_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(EAR_PACKAGE_AND_INSTALL OFF CACHE BOOL "" FORCE)
