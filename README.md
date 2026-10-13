@@ -16,9 +16,17 @@ It renders with **libear**, the C++ core of the EBU's reference renderer for **I
 using BS.2127's room-relative panning. It is not Dolby's renderer, so a Dolby-licensed processor
 may place sound somewhat differently.
 
-> **Windows only, for now.** It runs on Windows 10 and 11, 64-bit. It's built with Unity, and
-> there's no ready-made download yet, so you build it yourself: see
-> [Building and running](#building-and-running).
+> **Windows only, for now.** It runs on Windows 10 and 11, 64-bit. Download it below, or build it
+> yourself with Unity: see [Building and running](#building-and-running).
+
+## Download
+
+1. Download the Windows zip from the
+   [latest release](https://github.com/christianroman/atmos-visualizer/releases/latest) and unzip
+   it anywhere. Keep the folder together: the app needs the files next to it.
+2. Install ffmpeg and MKVToolNix (see [Requirements](#requirements)). truehdd comes with the app.
+3. Run `AtmosVisualizer.exe`. The app isn't code-signed yet, so Windows may say it protected your
+   PC: choose **More info**, then **Run anyway**.
 
 ## What it shows
 
