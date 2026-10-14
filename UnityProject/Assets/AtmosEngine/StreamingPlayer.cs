@@ -81,7 +81,7 @@ namespace AtmosEngine
         {
             Damf = damf;
             Output = output;
-            reader = new CafReader(damf.AudioPath);
+            reader = damf.OpenAudio();
             if (reader.Channels != damf.Elements.Count)
                 throw new InvalidOperationException("CAF has " + reader.Channels + " channels, header lists " + damf.Elements.Count + " elements");
             SampleRate = reader.SampleRate;

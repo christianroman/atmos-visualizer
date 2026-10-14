@@ -1,10 +1,11 @@
 // Finds and runs the command-line tools the app uses to prepare a movie: ffprobe and ffmpeg
-// (probe, video proxy), mkvextract (TrueHD track out of an MKV) and truehdd (TrueHD -> DAMF).
+// (probe, video proxy), mkvextract (Atmos track out of an MKV) and harletty (TrueHD or DD+ Atmos
+// -> DAMF; a fork of truehdd that adds DD+).
 //
 // Each tool is looked up in an optional settings file first, then among the tools that come with
-// the app (Tools\<name>\<name>.exe in StreamingAssets: truehdd), then on PATH, then in its usual
+// the app (Tools\<name>\<name>.exe in StreamingAssets: harletty), then on PATH, then in its usual
 // install folder. The settings file is plain "name: path" lines, e.g.
-//   truehdd: D:\tools\truehdd.exe
+//   harletty: D:\tools\harletty.exe
 // It lives where Unity keeps the app's data (Application.persistentDataPath):
 //   %USERPROFILE%\AppData\LocalLow\AtmosVisualizer\Atmos Visualizer\settings.yaml
 
@@ -20,9 +21,9 @@ namespace AtmosEngine
 {
     public sealed class ExternalTools
     {
-        public string Ffmpeg, Ffprobe, Mkvextract, Truehdd;
+        public string Ffmpeg, Ffprobe, Mkvextract, Harletty;
 
-        public static readonly string[] Names = { "ffmpeg", "ffprobe", "mkvextract", "truehdd" };
+        public static readonly string[] Names = { "ffmpeg", "ffprobe", "mkvextract", "harletty" };
 
         /// <summary>The app's settings file (also read by the command-line tools in tools/cs).</summary>
         public static string DefaultSettingsFile => Path.Combine(
@@ -50,7 +51,7 @@ namespace AtmosEngine
                 Ffmpeg = Locate("ffmpeg", overrides, bundledDir),
                 Ffprobe = Locate("ffprobe", overrides, bundledDir),
                 Mkvextract = Locate("mkvextract", overrides, bundledDir, Path.Combine(programFiles, "MKVToolNix", "mkvextract.exe")),
-                Truehdd = Locate("truehdd", overrides, bundledDir, Path.Combine(home, ".cargo", "bin", "truehdd.exe")),   // cargo install
+                Harletty = Locate("harletty", overrides, bundledDir, Path.Combine(home, ".cargo", "bin", "harletty.exe")),   // cargo install
             };
         }
 
@@ -80,7 +81,7 @@ namespace AtmosEngine
             if (Ffmpeg == null) yield return "ffmpeg";
             if (Ffprobe == null) yield return "ffprobe";
             if (Mkvextract == null) yield return "mkvextract (MKVToolNix)";
-            if (Truehdd == null) yield return "truehdd";
+            if (Harletty == null) yield return "harletty";
         }
     }
 

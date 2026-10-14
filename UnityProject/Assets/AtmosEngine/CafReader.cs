@@ -1,8 +1,10 @@
-// Reader for the CAF (Core Audio Format) files truehdd writes as NAME.atmos.audio.
+// Reader for the CAF (Core Audio Format) files the decoder writes as NAME.atmos.audio.
 //
 // CAF is Apple's container: an 8-byte file header, then chunks of [4-char type][int64 size].
 // 'desc' describes the PCM format, 'data' holds the interleaved samples (after a 4-byte edit
-// count). truehdd writes 24-bit big-endian integer PCM, one channel per DAMF element.
+// count). harletty (like truehdd) writes 24-bit big-endian integer PCM, one channel per DAMF
+// element. For DD+ it also writes the stream's 5.1 core ahead of the elements, so the reader can
+// be told to use only the last channels of each frame (see DamfFile.OpenAudio).
 // All CAF integers are big-endian.
 //
 // Reads are positioned by frame index, so the caller can stream sequentially or seek.
@@ -18,11 +20,12 @@ namespace AtmosEngine
     {
         public string Path { get; }
         public double SampleRate { get; }
-        public int Channels { get; }
+        public int Channels { get; }       // channels read: the last Channels of FileChannels
+        public int FileChannels { get; }   // channels stored in the file
         public int BitsPerChannel { get; }
         public bool IsFloat { get; }
         public bool IsLittleEndian { get; }
-        public int BytesPerFrame { get; }
+        public int BytesPerFrame { get; }  // in the file (all FileChannels)
         public long DataOffset { get; }   // file offset of frame 0
         public long FrameCount { get; }
 
@@ -32,7 +35,8 @@ namespace AtmosEngine
         // kCAFLinearPCMFormatFlagIsFloat / IsLittleEndian
         const uint FlagIsFloat = 1, FlagIsLittleEndian = 2;
 
-        public CafReader(string path)
+        /// <param name="lastChannels">read only the last this many channels of each frame (0 = all)</param>
+        public CafReader(string path, int lastChannels = 0)
         {
             Path = path;
             // A large buffer suits sequential streaming of a multi-GB file.
@@ -61,7 +65,7 @@ namespace AtmosEngine
                         uint flags = BigEndianUInt32(d, 12);
                         uint bytesPerPacket = BigEndianUInt32(d, 16);
                         uint framesPerPacket = BigEndianUInt32(d, 20);
-                        Channels = (int)BigEndianUInt32(d, 24);
+                        FileChannels = (int)BigEndianUInt32(d, 24);
                         BitsPerChannel = (int)BigEndianUInt32(d, 28);
                         IsFloat = (flags & FlagIsFloat) != 0;
                         IsLittleEndian = (flags & FlagIsLittleEndian) != 0;
@@ -69,7 +73,7 @@ namespace AtmosEngine
 
                         if (formatId != "lpcm") throw new InvalidDataException("CAF format is '" + formatId + "', expected 'lpcm'");
                         if (framesPerPacket != 1) throw new InvalidDataException("CAF framesPerPacket is " + framesPerPacket);
-                        if (Channels <= 0 || BytesPerFrame != Channels * (BitsPerChannel / 8))
+                        if (FileChannels <= 0 || BytesPerFrame != FileChannels * (BitsPerChannel / 8))
                             throw new InvalidDataException("CAF bytesPerPacket doesn't match channels x bits");
                         bool ok = IsFloat ? (BitsPerChannel == 32 || BitsPerChannel == 64)
                                           : (BitsPerChannel == 16 || BitsPerChannel == 24 || BitsPerChannel == 32);
@@ -92,6 +96,9 @@ namespace AtmosEngine
                     }
                 }
                 FrameCount = dataSize / BytesPerFrame;
+                if (lastChannels > FileChannels)
+                    throw new InvalidDataException("CAF has " + FileChannels + " channels, fewer than the " + lastChannels + " asked for");
+                Channels = lastChannels > 0 ? lastChannels : FileChannels;
             }
             catch
             {
@@ -107,19 +114,22 @@ namespace AtmosEngine
         public int ReadFloat(long startFrame, float[] dest, int frameCount)
         {
             int frames = FillBuffer(startFrame, frameCount);
-            int n = frames * Channels;
+            int skip = FileChannels - Channels;   // channels ahead of the ones read, in each frame
             var b = buffer;
             if (!IsFloat && BitsPerChannel == 24 && !IsLittleEndian)
             {
                 const float scale = 1f / 8388608f; // 2^23
                 // Shift the 3 bytes into the top of an int, then arithmetic-shift back down so
                 // the sign bit is extended.
-                for (int i = 0, j = 0; i < n; i++, j += 3)
-                    dest[i] = (((b[j] << 24) | (b[j + 1] << 16) | (b[j + 2] << 8)) >> 8) * scale;
+                for (int f = 0, i = 0, j = skip * 3; f < frames; f++, j += skip * 3)
+                    for (int c = 0; c < Channels; c++, i++, j += 3)
+                        dest[i] = (((b[j] << 24) | (b[j + 1] << 16) | (b[j + 2] << 8)) >> 8) * scale;
             }
             else
             {
-                for (int i = 0; i < n; i++) dest[i] = (float)SampleAsDouble(b, i);
+                for (int f = 0, i = 0; f < frames; f++)
+                    for (int c = 0; c < Channels; c++, i++)
+                        dest[i] = (float)SampleAsDouble(b, f * FileChannels + skip + c);
             }
             return frames;
         }
@@ -129,8 +139,10 @@ namespace AtmosEngine
         public int ReadDouble(long startFrame, double[] dest, int frameCount)
         {
             int frames = FillBuffer(startFrame, frameCount);
-            int n = frames * Channels;
-            for (int i = 0; i < n; i++) dest[i] = SampleAsDouble(buffer, i);
+            int skip = FileChannels - Channels;
+            for (int f = 0, i = 0; f < frames; f++)
+                for (int c = 0; c < Channels; c++, i++)
+                    dest[i] = SampleAsDouble(buffer, f * FileChannels + skip + c);
             return frames;
         }
 

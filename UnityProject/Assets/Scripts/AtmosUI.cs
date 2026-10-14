@@ -242,7 +242,7 @@ public sealed class AtmosUI : MonoBehaviour
     {
         var t = Panel("transport");
         var open = Button("Open…", () => OpenClicked?.Invoke());
-        open.tooltip = "A movie (MKV with a TrueHD Atmos track) or a .atmos master. A .atmos opened while a film of the same length is showing keeps the film's picture.";
+        open.tooltip = "A movie (MKV with a TrueHD or DD+ Atmos track) or a .atmos master. A .atmos opened while a film of the same length is showing keeps the film's picture.";
         open.AddToClassList("btn--primary");
         t.Add(open);
         t.Add(new VisualElement().WithClass("divider"));
@@ -416,7 +416,7 @@ public sealed class AtmosUI : MonoBehaviour
     {
         welcomePanel = Panel("welcome");
         welcomePanel.Add(new Label("Open a film to start").WithClass("subtitle"));
-        welcomePanel.Add(new Label("A movie with a Dolby TrueHD Atmos track (MKV), or a .atmos master. To see a .atmos mix with its film, open the film first, then the .atmos.").WithClass("hint"));
+        welcomePanel.Add(new Label("A movie with a Dolby Atmos track, TrueHD or DD+ (MKV), or a .atmos master. To see a .atmos mix with its film, open the film first, then the .atmos.").WithClass("hint"));
         var open = Button("Open…", () => OpenClicked?.Invoke());
         open.AddToClassList("btn--primary");
         open.AddToClassList("welcome-open");

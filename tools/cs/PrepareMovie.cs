@@ -16,9 +16,11 @@ static class PrepareMovie
     {
         string cache = args.Length > 1 ? args[1]
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AtmosVisualizer", "Cache");
-        var tools = ExternalTools.Find();
-        Console.WriteLine("tools: ffmpeg={0}\n       ffprobe={1}\n       mkvextract={2}\n       truehdd={3}",
-            tools.Ffmpeg, tools.Ffprobe, tools.Mkvextract, tools.Truehdd);
+        // the tools that come with the app, as the app finds them (this runs from tools/cs/bin)
+        var tools = ExternalTools.Find(null, Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "..", "..", "..", "UnityProject", "Assets", "StreamingAssets", "Tools")));
+        Console.WriteLine("tools: ffmpeg={0}\n       ffprobe={1}\n       mkvextract={2}\n       harletty={3}",
+            tools.Ffmpeg, tools.Ffprobe, tools.Mkvextract, tools.Harletty);
         var prep = new MoviePreparer(args[0], cache, tools);
         var t0 = DateTime.UtcNow;
         prep.Start();

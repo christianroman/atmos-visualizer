@@ -2,7 +2,7 @@
 // the 3D view and the UI each frame.
 //
 // Open... (one button):
-//   a movie (.mkv, ...)        audio: the TrueHD Atmos track is extracted and decoded once (cached);
+//   a movie (.mkv, ...)        audio: the Atmos track (TrueHD or DD+) is extracted and decoded once (cached);
 //                              video: the original, decoded live while it plays
 //   a .atmos master            its movie is found automatically if it came from the cache; otherwise,
 //                              opened while a film of the same length is showing, it keeps that
@@ -99,7 +99,7 @@ public sealed class AtmosApp : MonoBehaviour
         AudioSettings.GetDSPBufferSize(out int bufferLength, out int buffers);
         OutputLatencySeconds = (1 + buffers) * (double)bufferLength / AudioSettings.outputSampleRate;
         tools = ExternalTools.Find(Path.Combine(Application.persistentDataPath, "settings.yaml"),
-            Path.Combine(Application.streamingAssetsPath, "Tools"));   // truehdd comes with the app
+            Path.Combine(Application.streamingAssetsPath, "Tools"));   // harletty comes with the app
 
         var errors = new List<string>();
         Presets = LayoutPreset.LoadAll(Path.Combine(Application.streamingAssetsPath, "Layouts"), errors);
@@ -118,9 +118,9 @@ public sealed class AtmosApp : MonoBehaviour
         UI.OpenClicked += () =>
         {
             var files = NativeFileDialog.OpenFiles(
-                "Open a movie (MKV with a TrueHD Atmos track) or a .atmos master - or a .atmos and a movie together",
+                "Open a movie (MKV with a TrueHD or DD+ Atmos track) or a .atmos master - or a .atmos and a movie together",
                 Dir(PlayerPrefs.GetString("lastOpenDir", "")),
-                "Movies and Atmos masters (*.mkv;*.m2ts;*.mp4;*.atmos)", "*.mkv;*.mka;*.m2ts;*.ts;*.mp4;*.m4v;*.mov;*.atmos",
+                "Movies and Atmos masters (*.mkv;*.m2ts;*.mp4;*.ec3;*.atmos)", "*.mkv;*.mka;*.m2ts;*.ts;*.mp4;*.m4v;*.mov;*.ec3;*.eac3;*.atmos",
                 "All files (*.*)", "*.*");
             if (files.Length > 0) OpenAny(files);
         };
@@ -306,7 +306,7 @@ public sealed class AtmosApp : MonoBehaviour
         audioSource = loadingDecodedFrom;
         try
         {
-            using (var caf = new CafReader(damf.AudioPath))
+            using (var caf = damf.OpenAudio())
             {
                 audioBits = caf.BitsPerChannel;
                 audioChannels = caf.Channels;
@@ -341,7 +341,9 @@ public sealed class AtmosApp : MonoBehaviour
         else
         {
             Movie.Close();
-            videoNote = "none - to see a .atmos with its film, open the film first, then the .atmos";
+            // decoded from a file without a picture (a DD+ demo clip, an .mka), or a .atmos on its own
+            videoNote = audioSource != null ? "none (the file has no picture)"
+                                            : "none - to see a .atmos with its film, open the film first, then the .atmos";
         }
         RefreshFileInfo();
         SelectPreset(CurrentPreset);

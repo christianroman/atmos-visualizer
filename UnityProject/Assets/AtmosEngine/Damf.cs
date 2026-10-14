@@ -1,7 +1,7 @@
-// Dolby Atmos Master File set (DAMF), as written by truehdd:
+// Dolby Atmos Master File set (DAMF), as written by Dolby tools, harletty and truehdd:
 //   NAME.atmos           header: bed channels and the object list, in audio channel order
 //   NAME.atmos.metadata  event list per element (delta-encoded: a field appears only when it changes)
-//   NAME.atmos.audio     CAF, one channel per element (see CafReader)
+//   NAME.atmos.audio     CAF, one channel per element (see CafReader; DD+ decodes: see OpenAudio)
 //
 // DamfFile loads the two YAML files and resolves the delta-encoding, so every event carries
 // the element's complete state at that moment.
@@ -50,6 +50,7 @@ namespace AtmosEngine
         public double SampleRate { get; private set; }
         public double Fps { get; private set; }
         public double Offset { get; private set; }
+        public string SourceCodec { get; private set; } = "";   // what harletty decoded: "TrueHD", "EAC3-JOC"
         public List<DamfElement> Elements { get; } = new List<DamfElement>();
 
         public IEnumerable<DamfElement> Objects => Elements.Where(e => !e.IsBed);
@@ -66,6 +67,7 @@ namespace AtmosEngine
             f.AudioPath = Path.Combine(dir, (string)pres["audio"]);
             f.Fps = pres.TryGetValue("fps", out var fps) ? MiniYaml.ToDouble(fps) : 0;
             f.Offset = pres.TryGetValue("offset", out var off) ? MiniYaml.ToDouble(off) : 0;
+            f.SourceCodec = pres.TryGetValue("sourceCodec", out var codec) ? codec as string ?? "" : "";
 
             // Channel order: bed channels first, then objects, exactly as listed.
             var byId = new Dictionary<int, DamfElement>();
@@ -119,6 +121,14 @@ namespace AtmosEngine
             }
             return f;
         }
+
+        /// <summary>True for a harletty decode of Dolby Digital Plus (E-AC-3 JOC) Atmos.</summary>
+        public bool IsDdPlus => SourceCodec.StartsWith("EAC3", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>Opens the audio. harletty's DD+ decodes hold the stream's 5.1 core (its five
+        /// full-band channels) ahead of the elements, so for those only the last Elements.Count
+        /// channels are read.</summary>
+        public CafReader OpenAudio() => new CafReader(AudioPath, IsDdPlus ? Elements.Count : 0);
 
         void AddElement(Dictionary<int, DamfElement> byId, int id, bool isBed, string bedChannel)
         {

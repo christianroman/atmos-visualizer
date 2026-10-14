@@ -1,7 +1,7 @@
-// Turns a movie file (e.g. a Blu-ray MKV with a TrueHD Atmos track) into what the app plays:
-//   1. Read the movie        ffprobe: find the TrueHD Atmos track and the video's properties
-//   2. Extract TrueHD        mkvextract (byte-exact) - or ffmpeg for other containers
-//   3. Decode Atmos          truehdd -> DAMF: NAME.atmos, .atmos.metadata, .atmos.audio (CAF)
+// Turns a movie file (e.g. an MKV with a TrueHD or DD+ Atmos track) into what the app plays:
+//   1. Read the movie        ffprobe: find the Atmos track (TrueHD, else DD+) and the video's properties
+//   2. Extract the track     mkvextract (byte-exact) - or ffmpeg for other containers
+//   3. Decode Atmos          harletty -> DAMF: NAME.atmos, .atmos.metadata, .atmos.audio (CAF)
 // The video is not converted: the app decodes the original live while it plays
 // (FfmpegVideoReader). Results go into a per-movie cache folder, so this happens once.
 //
@@ -42,13 +42,15 @@ namespace AtmosEngine
         public string SourcePath = "";
         public double DurationSeconds;
         public int AudioStream = -1, VideoStream = -1;
+        public string AudioCodec = "";          // the Atmos track's codec: "truehd", or "eac3" (DD+)
         public string AudioProfile = "", VideoCodec = "", PixFmt = "", Transfer = "", ColorSpace = "";
         public int Width, Height;
         public double Fps;
         public double AudioStart, VideoStart;   // stream start times on the file's timeline
         public double AudioBitrate;             // bits per second, the track's average (0 = unknown)
-        public bool DdPlusAtmos, TrueHdWithoutAtmos;
+        public bool TrueHdWithoutAtmos;
 
+        public bool IsDdPlus => AudioCodec == "eac3";
         public bool HasVideo => VideoStream >= 0 && Width > 0 && Height > 0;
         public bool TenBit => PixFmt.Contains("10");
         public bool IsPq => Transfer == "smpte2084";
@@ -82,21 +84,20 @@ namespace AtmosEngine
                 string type = Get(kv, "codec_type"), codec = Get(kv, "codec_name"), profile = Get(kv, "profile");
                 double start = 0;
                 double.TryParse(Get(kv, "start_time"), NumberStyles.Float, CultureInfo.InvariantCulture, out start);
-                if (type == "audio" && codec == "truehd")
+                if (type == "audio" && (codec == "truehd" || codec == "eac3"))
                 {
                     bool isAtmos = profile.IndexOf("Atmos", StringComparison.OrdinalIgnoreCase) >= 0;
-                    if (isAtmos && info.AudioStream < 0)
+                    // TrueHD (lossless, from a Blu-ray) wins over DD+ (from streaming) in a file with both
+                    bool better = info.AudioStream < 0 || (codec == "truehd" && info.AudioCodec != "truehd");
+                    if (isAtmos && better)
                     {
                         info.AudioStream = index;
+                        info.AudioCodec = codec;
                         info.AudioProfile = profile;
                         info.AudioStart = start;
                         info.AudioBitrate = Bitrate(kv);
                     }
-                    else if (!isAtmos) info.TrueHdWithoutAtmos = true;
-                }
-                else if (type == "audio" && codec == "eac3" && profile.IndexOf("Atmos", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    info.DdPlusAtmos = true;
+                    else if (!isAtmos && codec == "truehd") info.TrueHdWithoutAtmos = true;
                 }
                 else if (type == "video" && info.VideoStream < 0 && codec != "mjpeg" && codec != "png")
                 {
@@ -122,7 +123,7 @@ namespace AtmosEngine
             var lines = new[]
             {
                 "source: " + SourcePath, "duration: " + DurationSeconds.ToString(c),
-                "audioStream: " + AudioStream, "audioProfile: " + AudioProfile, "audioStart: " + AudioStart.ToString(c),
+                "audioStream: " + AudioStream, "audioCodec: " + AudioCodec, "audioProfile: " + AudioProfile, "audioStart: " + AudioStart.ToString(c),
                 "audioBitrate: " + AudioBitrate.ToString("0", c),
                 "videoStream: " + VideoStream, "videoCodec: " + VideoCodec, "width: " + Width, "height: " + Height,
                 "pixFmt: " + PixFmt, "transfer: " + Transfer, "colorSpace: " + ColorSpace,
@@ -147,6 +148,7 @@ namespace AtmosEngine
             {
                 SourcePath = S("source"), DurationSeconds = D("duration"),
                 AudioStream = I("audioStream"), AudioProfile = S("audioProfile"), AudioStart = D("audioStart"), AudioBitrate = D("audioBitrate"),
+                AudioCodec = S("audioCodec").Length > 0 ? S("audioCodec") : "truehd",   // caches from before DD+ were all TrueHD
                 VideoStream = I("videoStream"), VideoCodec = S("videoCodec"), Width = Math.Max(0, I("width")), Height = Math.Max(0, I("height")),
                 PixFmt = S("pixFmt"), Transfer = S("transfer"), ColorSpace = S("colorSpace"), Fps = D("fps"), VideoStart = D("videoStart"),
             };
@@ -196,7 +198,7 @@ namespace AtmosEngine
         public string CacheDir { get; private set; }
         public MovieInfo Info { get; private set; } = new MovieInfo();
         public PrepStep Probe { get; } = new PrepStep { Name = "Read the movie" };
-        public PrepStep Extract { get; } = new PrepStep { Name = "Extract the TrueHD track" };
+        public PrepStep Extract { get; } = new PrepStep { Name = "Extract the Atmos track" };
         public PrepStep Decode { get; } = new PrepStep { Name = "Decode the Atmos objects" };
         public IReadOnlyList<PrepStep> Steps => new[] { Probe, Extract, Decode };
 
@@ -275,13 +277,8 @@ namespace AtmosEngine
             catch (Exception e) { throw Fail(Probe, e.Message); }
 
             if (Info.AudioStream < 0)
-            {
-                if (Info.DdPlusAtmos)
-                    throw Fail(Probe, "This file's Atmos is Dolby Digital Plus (E-AC-3 JOC), as on streaming services and demo clips. "
-                                     + "Only TrueHD Atmos (Blu-ray) can be decoded into objects: there is no open decoder for DD+ Atmos objects.");
                 throw Fail(Probe, Info.TrueHdWithoutAtmos ? "The TrueHD track has no Atmos, so there are no objects to show."
-                                                         : "No Dolby TrueHD Atmos track found in this file.");
-            }
+                                                         : "No Dolby Atmos track (TrueHD or Dolby Digital Plus) found in this file.");
 
             // one cache folder per file version (path, size and modification time)
             var fi = new FileInfo(SourcePath);
@@ -315,7 +312,7 @@ namespace AtmosEngine
 
         // ---- 2. extract -------------------------------------------------------------------------
 
-        string ThdPath => Path.Combine(CacheDir, "audio.thd");
+        string TrackPath => Path.Combine(CacheDir, Info.IsDdPlus ? "audio.ec3" : "audio.thd");
 
         void RunExtract()
         {
@@ -326,7 +323,7 @@ namespace AtmosEngine
             {
                 // mkvextract's track IDs are the stream indexes for Matroska; --gui-mode prints
                 // "#GUI#progress NN%" lines we can follow.
-                r = ProcessRunner.Run(tools.Mkvextract, new[] { "--gui-mode", SourcePath, "tracks", Info.AudioStream + ":" + ThdPath },
+                r = ProcessRunner.Run(tools.Mkvextract, new[] { "--gui-mode", SourcePath, "tracks", Info.AudioStream + ":" + TrackPath },
                     line =>
                     {
                         int i = line.IndexOf("#GUI#progress ", StringComparison.Ordinal);
@@ -336,11 +333,11 @@ namespace AtmosEngine
             else
             {
                 r = ProcessRunner.Run(tools.Ffmpeg, new[] { "-hide_banner", "-nostdin", "-y", "-i", SourcePath, "-map", "0:" + Info.AudioStream,
-                    "-c", "copy", "-f", "truehd", "-progress", "pipe:1", "-nostats", ThdPath }, FfmpegProgress(Extract), cts.Token);
+                    "-c", "copy", "-f", Info.IsDdPlus ? "eac3" : "truehd", "-progress", "pipe:1", "-nostats", TrackPath }, FfmpegProgress(Extract), cts.Token);
             }
             Check(r, "extraction");
-            if (!File.Exists(ThdPath) || new FileInfo(ThdPath).Length == 0) throw new Exception("no TrueHD data was extracted");
-            Extract.Detail = Gb(new FileInfo(ThdPath).Length);
+            if (!File.Exists(TrackPath) || new FileInfo(TrackPath).Length == 0) throw new Exception("no audio was extracted");
+            Extract.Detail = Gb(new FileInfo(TrackPath).Length);
         }
 
         // ---- 3. decode ----------------------------------------------------------------------------
@@ -353,32 +350,102 @@ namespace AtmosEngine
             string caf = basePath + ".atmos.audio";
             foreach (var f in Directory.GetFiles(dir)) File.Delete(f);   // remove a partial earlier attempt
 
-            // truehdd's progress bars aren't line-based, so follow the size of the audio it writes
+            // harletty's progress bars aren't line-based, so follow the size of the audio it writes
             var watch = new Timer(_ => Decode.Progress = Math.Min(0.99, EstimateCafProgress(caf)), null, 500, 500);
             ProcessRunner.Result r;
             try
             {
-                r = ProcessRunner.Run(tools.Truehdd, new[] { "decode", ThdPath, "--presentation", "3", "--output-path", basePath, "--loglevel", "warn" },
-                    null, cts.Token);
+                // the codec is named: harletty's own detection can miss TrueHD
+                r = ProcessRunner.Run(tools.Harletty, new[] { "--codec", Info.IsDdPlus ? "eac3" : "truehd", "--loglevel", "warn",
+                    "decode", TrackPath, "--presentation", "3", "--output-path", basePath }, null, cts.Token);
             }
             finally
             {
                 watch.Dispose();
             }
             if (r.StdErr.IndexOf("ISF", StringComparison.OrdinalIgnoreCase) >= 0)
-                throw new Exception("this track uses ISF objects, which truehdd can't decode yet");
-            Check(r, "truehdd");
+                throw new Exception("this track uses ISF objects, which harletty can't decode yet");
+            Check(r, "harletty");
 
             string atmos = basePath + ".atmos";
-            if (!File.Exists(atmos)) throw new Exception("truehdd wrote no .atmos file");
+            if (!File.Exists(atmos)) throw new Exception("harletty wrote no .atmos file");
             var damf = DamfFile.Load(atmos);                      // make sure it reads
-            using (var reader = new CafReader(damf.AudioPath))
+            using (var reader = damf.OpenAudio())
                 if (reader.Channels != damf.Elements.Count)
                     throw new Exception("decoded audio has " + reader.Channels + " channels but " + damf.Elements.Count + " elements");
+            if (damf.IsDdPlus) PlaceWaitingObjects(damf);
             Decode.Detail = damf.Objects.Count() + " objects, " + Gb(new FileInfo(caf).Length);
             File.WriteAllText(Path.Combine(CacheDir, "audio.done"), DateTime.UtcNow.ToString("o"));
-            try { File.Delete(ThdPath); } catch (IOException) { }   // only needed for decoding
+            try { File.Delete(TrackPath); } catch (IOException) { }   // only needed for decoding
             AtmosPath = atmos;
+        }
+
+        /// <summary>
+        /// harletty puts a DD+ object at [-1, 1, 0] (front left, on the floor) until the stream first
+        /// gives its position, which for an object that hasn't made a sound yet can be minutes in.
+        /// The app would draw those objects as dots in that corner. Measured on four streams, every
+        /// such object was digitally silent until its first position, while objects really placed
+        /// front left had sound there. So an object whose audio is all zeros until its first
+        /// position gets that position from the start, which is what a master states for an object
+        /// waiting to play. Nothing audible changes. Returns how many objects were moved.
+        /// </summary>
+        static int PlaceWaitingObjects(DamfFile damf)
+        {
+            // objects that open at the placeholder, with the event that first moves them
+            var waiting = new Dictionary<DamfElement, DamfEvent>();
+            foreach (var e in damf.Objects)
+            {
+                if (e.Events.Count < 2) continue;
+                var first = e.Events[0];
+                if (first.SamplePos != 0 || first.X != -1 || first.Y != 1 || first.Z != 0) continue;
+                foreach (var ev in e.Events)
+                    if (ev.X != first.X || ev.Y != first.Y || ev.Z != first.Z) { waiting[e] = ev; break; }
+            }
+
+            // keep those whose audio is all zeros until then
+            var sound = new HashSet<DamfElement>();
+            if (waiting.Count > 0)
+                using (var audio = damf.OpenAudio())
+                {
+                    const int block = 48000;
+                    var buf = new float[block * audio.Channels];
+                    long end = waiting.Values.Max(ev => ev.SamplePos);
+                    for (long pos = 0; pos < end && sound.Count < waiting.Count; pos += block)
+                    {
+                        int got = audio.ReadFloat(pos, buf, (int)Math.Min(block, end - pos));
+                        if (got == 0) break;
+                        foreach (var w in waiting)
+                        {
+                            if (sound.Contains(w.Key)) continue;
+                            int n = (int)Math.Max(0, Math.Min(got, w.Value.SamplePos - pos));
+                            for (int f = 0; f < n; f++)
+                                if (buf[f * audio.Channels + w.Key.Index] != 0) { sound.Add(w.Key); break; }
+                        }
+                    }
+                }
+            var moves = waiting.Where(w => !sound.Contains(w.Key)).ToDictionary(w => w.Key.Id, w => w.Value);
+            if (moves.Count == 0) return 0;
+
+            // rewrite the "pos:" line of each one's opening event (ID, samplePos 0) in the metadata file
+            var c = CultureInfo.InvariantCulture;
+            var lines = File.ReadAllLines(damf.MetadataPath);
+            int id = -1;
+            long sample = -1;
+            var done = new HashSet<int>();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string t = lines[i].Trim();
+                if (t.StartsWith("- ID:", StringComparison.Ordinal)) { id = int.Parse(t.Substring(5).Trim(), c); sample = -1; }
+                else if (t.StartsWith("samplePos:", StringComparison.Ordinal)) sample = long.Parse(t.Substring(10).Trim(), c);
+                else if (t.StartsWith("pos:", StringComparison.Ordinal) && sample == 0 && moves.TryGetValue(id, out var to) && done.Add(id))
+                    lines[i] = lines[i].Substring(0, lines[i].IndexOf("pos:", StringComparison.Ordinal))
+                               + "pos: [" + to.X.ToString("R", c) + ", " + to.Y.ToString("R", c) + ", " + to.Z.ToString("R", c) + "]";
+            }
+            string tmp = damf.MetadataPath + ".tmp";
+            File.WriteAllText(tmp, string.Join("\n", lines) + "\n", new UTF8Encoding(false));
+            File.Delete(damf.MetadataPath);
+            File.Move(tmp, damf.MetadataPath);
+            return done.Count;
         }
 
         double EstimateCafProgress(string caf)

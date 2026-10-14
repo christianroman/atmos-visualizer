@@ -11,11 +11,13 @@ open-source and binary form under the licenses below.
 | **xsimd** 12.1.1 | SIMD inside libear | BSD-3-Clause — Copyright (c) 2016 Johan Mabille, Sylvain Corlay, Wolf Vollprecht and Martin Renou; QuantStack; Serge Guelton | `external/libear/submodules/xsimd` |
 | **KISS FFT** | FFT inside libear | BSD-3-Clause — Copyright (c) 2003-2010 Mark Borgerding | `external/libear/submodules/kissfft` |
 | **Boost** 1.92.0 (headers: Optional, Variant) | Required by libear | Boost Software License 1.0 | Downloaded by CMake when `ear_shim.dll` is built (headers only, build time) |
-| **truehdd** 0.6.2 — open Dolby TrueHD decoder | Decoding a movie's TrueHD Atmos track into objects (DAMF); run as a separate program | Apache-2.0 — Copyright 2025 Rainbaby | `UnityProject/Assets/StreamingAssets/Tools/truehdd/`: the official Windows x64 release, unmodified ([0.6.2](https://github.com/truehdd/truehdd/releases/tag/0.6.2), zip SHA-256 `d1c1920d2da8aec42ffe1c6df1d653dd0dc51c77a576df8704c666bf008e156e`), with its `LICENSE` |
+| **harletty** 0.9.0 (the `harletty` CLI of harletty-bridge) — open Dolby TrueHD and Dolby Digital Plus Atmos decoder, a fork of [truehdd](https://github.com/truehdd/truehdd) by Rainbaby | Decoding a movie's Atmos track into objects (DAMF); run as a separate program | Apache-2.0 — its TrueHD decoding is truehdd's `truehd` crate, Copyright 2025 Rainbaby | `UnityProject/Assets/StreamingAssets/Tools/harletty/`: `harletty.exe` from the official Windows x64 release, unmodified ([v0.9.0](https://github.com/harletty/harletty-bridge/releases/tag/v0.9.0), `harletty-cli-v0.9.0-windows-x86_64.zip`, SHA-256 `0f37246c131506707143f6b355bde47635bcc37f9e9479e2405b5bc4d7b7abdd`), with the project's `LICENSE` |
 
-truehdd.exe also contains the Rust libraries truehdd is built from (140 crates, listed in its
-`Cargo.lock`). Per its `deny.toml`, they are under MIT or Apache-2.0, except `unicode-ident`
-(MIT or Apache-2.0, plus Unicode-3.0) and `subtle` (BSD-3-Clause).
+harletty.exe also contains the Rust libraries the CLI is built from (87 crates, from its
+`Cargo.lock` at v0.9.0). They are under MIT or Apache-2.0, except `unicode-ident` (MIT or
+Apache-2.0, plus Unicode-3.0), `subtle` (BSD-3-Clause), `aho-corasick`, `jiff` and `memchr`
+(Unlicense or MIT) and `ryu` (Apache-2.0 or BSL-1.0). The harletty-bridge project also builds
+GPL-3.0 decoder plug-ins; they are not part of the CLI and are not included.
 
 Not distributed with the app:
 
@@ -26,8 +28,9 @@ Not distributed with the app:
   of this repository. The README's screenshots and its silent demo video show a film playing in
   the app; the film belongs to its rights holders.
 
-"Dolby", "Dolby Atmos" and "TrueHD" are trademarks of Dolby Laboratories. This project is not
-affiliated with or endorsed by Dolby, and it does not implement Dolby's renderer.
+"Dolby", "Dolby Atmos", "Dolby Digital Plus" and "TrueHD" are trademarks of Dolby Laboratories.
+This project is not affiliated with or endorsed by Dolby, and it does not implement Dolby's
+renderer.
 
 ## BSD-3-Clause-Clear (EBU ADM Renderer)
 
@@ -48,5 +51,5 @@ NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS 
 
 The Apache-2.0, MPL-2.0 and BSD-3-Clause license texts come with the libear submodule
 (`external/libear` and its `submodules/` folders), and the Boost license with the Boost download.
-truehdd's license is next to truehdd.exe.
+harletty's license is next to harletty.exe.
 The app's own code is under the Apache License 2.0 (`LICENSE`).

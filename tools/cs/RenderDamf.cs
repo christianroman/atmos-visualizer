@@ -26,7 +26,7 @@ static class RenderDamf
         var preset = FindPreset(args[1]);
         bool polar = Array.IndexOf(args, "--polar") >= 0;
         var numeric = Array.FindAll(args, a => !a.StartsWith("--"));
-        using (var caf = new CafReader(damf.AudioPath))
+        using (var caf = damf.OpenAudio())
         {
             Console.WriteLine("ear_shim  : " + EarShim.Version);
             Console.WriteLine("DAMF      : {0} elements ({1} bed, {2} objects), {3} events",

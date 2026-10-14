@@ -20,7 +20,7 @@ static class StreamTest
         var presets = LayoutPreset.LoadAll(dir);
         var stereo = presets.Find(p => p.Name == "2.0");
         var meterPreset = presets.Find(p => p.Name == "9.1.6");
-        using (var caf = new CafReader(damf.AudioPath))
+        using (var caf = damf.OpenAudio())
         {
             var timeline = new GainTimeline(damf, stereo);
             var player = new StreamingPlayer(damf, timeline, bufferSeconds: 0.5);   // small ring: many wrap-arounds
