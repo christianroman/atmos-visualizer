@@ -119,11 +119,19 @@ namespace AtmosEngine
                 else
                     list.Add(s);
             }
+            // a bed channel without events plays throughout at full level (harletty writes DTS:X
+            // as fixed channels and no events at all)
+            foreach (var e in f.Beds)
+                if (e.Events.Count == 0)
+                    e.Events.Add(new DamfEvent { Active = true, GainDb = 0, Zones = "all", Elevation = true });
             return f;
         }
 
         /// <summary>True for a harletty decode of Dolby Digital Plus (E-AC-3 JOC) Atmos.</summary>
         public bool IsDdPlus => SourceCodec.StartsWith("EAC3", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>True for a harletty decode of DTS:X (fixed channels, as "DTS:X-7.1.4").</summary>
+        public bool IsDtsX => SourceCodec.StartsWith("DTS", StringComparison.OrdinalIgnoreCase);
 
         /// <summary>Opens the audio. harletty's DD+ decodes hold the stream's 5.1 core (its five
         /// full-band channels) ahead of the elements, so for those only the last Elements.Count

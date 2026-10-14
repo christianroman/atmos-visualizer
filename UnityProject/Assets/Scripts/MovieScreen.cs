@@ -57,7 +57,7 @@ public sealed class MovieScreen : MonoBehaviour
         OffsetSeconds = info.AudioStart;
         int w = info.Width, h = info.Height;
         bool ten = info.TenBit;
-        reader = new FfmpegVideoReader(ffmpeg, info.SourcePath, info.VideoStream, w, h, ten, info.Fps);
+        reader = new FfmpegVideoReader(ffmpeg, info.SourcePath, info.VideoStream, w, h, ten, info.Fps, fileStart: info.FileStart);
 
         yTex = new Texture2D(w, h, ten ? TextureFormat.R16 : TextureFormat.R8, false, true) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
         uvTex = new Texture2D(w / 2, h / 2, ten ? TextureFormat.RG32 : TextureFormat.RG16, false, true) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };

@@ -51,13 +51,17 @@ namespace AtmosEngine
         long generation;
         volatile bool ended;
         long framesDecoded;
+        readonly double fileStart;
         static readonly Regex PtsTime = new Regex(@"pts_time:\s*(-?[0-9.]+(?:e[-+]?[0-9]+)?)", RegexOptions.Compiled);
 
+        /// <param name="fileStart">the file's own start time (ffprobe's format start_time): 0 in an
+        /// MKV, 600 s in a Blu-ray .m2ts</param>
         public FfmpegVideoReader(string ffmpegPath, string sourcePath, int streamIndex, int width, int height, bool tenBit,
-                                 double fps, string hwaccel = "d3d11va")
+                                 double fps, string hwaccel = "d3d11va", double fileStart = 0)
         {
             ffmpeg = ffmpegPath;
             source = sourcePath;
+            this.fileStart = fileStart;
             stream = streamIndex;
             Width = width;
             Height = height;
@@ -85,7 +89,9 @@ namespace AtmosEngine
                 {
                     "-hide_banner", "-nostdin", "-nostats", "-loglevel", "info",
                     "-hwaccel", hwaccel,
-                    "-ss", Math.Max(0, seconds).ToString("0.######", CultureInfo.InvariantCulture), "-copyts",
+                    // seconds is on the file's clock (as are the frame times -copyts keeps), but
+                    // -ss counts from the file's start: they differ when that isn't 0 (.m2ts)
+                    "-ss", Math.Max(0, seconds - fileStart).ToString("0.######", CultureInfo.InvariantCulture), "-copyts",
                     "-i", source,
                     "-map", "0:" + stream, "-an", "-sn", "-dn",
                     "-fps_mode", "passthrough",                        // one output frame per decoded frame

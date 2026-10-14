@@ -69,7 +69,36 @@ namespace AtmosEngine
                 { "Lss", ("M+090", 90, 0, -1, 0, 0) }, { "Rss", ("M-090", -90, 0, 1, 0, 0) },
                 { "Lrs", ("M+135", 135, 0, -1, -1, 0) }, { "Rrs", ("M-135", -135, 0, 1, -1, 0) },
                 { "Lts", ("U+090", 90, 30, -1, 0, 1) }, { "Rts", ("U-090", -90, 30, 1, 0, 1) },
+                // DTS:X 7.1.4 (as harletty names it): heights high on the front and back walls,
+                // the same speakers as the 11.1.8 layout's Lfh/Rfh and Lrh/Rrh
+                { "Lfh", ("U+030", 30, 30, -1, 1, 1) }, { "Rfh", ("U-030", -30, 30, 1, 1, 1) },
+                { "Lrh", ("U+150", 150, 30, -1, -1, 1) }, { "Rrh", ("U-150", -150, 30, 1, -1, 1) },
             };
+
+        /// <summary>DTS:X heights, by preference: the layout's height speakers on the same side,
+        /// front to back for the front pair and back to front for the rear pair.</summary>
+        static readonly Dictionary<string, string[]> HeightLabels = new Dictionary<string, string[]>
+        {
+            { "Lfh", new[] { "U+030", "U+045", "U+090" } }, { "Rfh", new[] { "U-030", "U-045", "U-090" } },
+            { "Lrh", new[] { "U+150", "U+135", "U+110", "U+090" } }, { "Rrh", new[] { "U-150", "U-135", "U-110", "U-090" } },
+        };
+
+        /// <summary>
+        /// The speaker a DTS:X height channel plays on: the nearest height speaker on its side
+        /// that the layout has, as a DTS:X receiver plays its heights on whichever height
+        /// speakers it is set up with. Null when there is none (or for any other channel); the
+        /// channel is then placed by its direction, BS.2127's rule. This is a routing choice on
+        /// top of BS.2127: by direction alone, the front heights (30 degrees up) would land
+        /// mostly in L and R on 5.1.2, and spill into the centre on 7.1.4.
+        /// </summary>
+        static (string label, double az, double el)? HeightSpeaker(string channel, LayoutPreset preset)
+        {
+            if (!HeightLabels.TryGetValue(channel, out var labels)) return null;
+            foreach (var label in labels)
+                foreach (var s in preset.Speakers)
+                    if (s.Label == label) return (s.Label, s.Azimuth, s.Elevation);
+            return null;
+        }
 
         /// <summary>Where a bed channel is drawn: its speaker's place in the room box. Bed
         /// channels never move.</summary>
@@ -125,7 +154,8 @@ namespace AtmosEngine
                             {
                                 if (!BedMap.TryGetValue(e.BedChannel, out var b))
                                     throw new NotSupportedException("bed channel '" + e.BedChannel + "' isn't mapped yet");
-                                direct.Gains(b.label, b.az, b.el, b.label.StartsWith("LFE") ? 120.0 : 0.0, g);
+                                var (label, az, el) = HeightSpeaker(e.BedChannel, preset) ?? (b.label, b.az, b.el);
+                                direct.Gains(label, az, el, label.StartsWith("LFE") ? 120.0 : 0.0, g);
                                 for (int k = 0; k < Channels; k++) g[k] *= lin;
                             }
                             else

@@ -24,8 +24,8 @@ may place sound somewhat differently.
 1. Download the Windows zip from the
    [latest release](https://github.com/christianroman/atmos-visualizer/releases/latest) and unzip
    it anywhere. Keep the folder together: the app needs the files next to it.
-2. Install ffmpeg and MKVToolNix (see [Requirements](#requirements)). harletty, the Atmos
-   decoder, comes with the app.
+2. Install ffmpeg and MKVToolNix (see [Requirements](#requirements)). harletty, the decoder,
+   comes with the app.
 3. Run `AtmosVisualizer.exe`. The app isn't code-signed yet, so Windows may say it protected your
    PC: choose **More info**, then **Run anyway**.
 
@@ -35,6 +35,7 @@ may place sound somewhat differently.
   Blu-ray) or Dolby Digital Plus (as in streaming downloads and most demo clips). The Atmos
   objects are decoded once and cached; the picture plays live from the original file (GPU
   decoding, HDR10 tone-mapped).
+- **DTS:X movies** too, shown as the 7.1.4 speaker channels they carry.
 - **Dolby Atmos masters** (`.atmos`), on their own or with a film's picture.
 - **Eleven speaker layouts**, switchable while playing: 2.0, 5.1, 7.1, 5.1.2 (top middle or front
   height), 5.1.4, 7.1.2, 7.1.4, 9.1.4, 9.1.6, 11.1.8. You can add your own (see below).
@@ -63,6 +64,7 @@ may place sound somewhat differently.
 |---|---|---|
 | Movies with a **Dolby TrueHD Atmos** track | `.mkv`; also `.mka` `.m2ts` `.ts` `.mp4` `.m4v` `.mov`, not yet tested | Decoded once and cached. The picture plays from the same file. |
 | Movies with a **Dolby Digital Plus Atmos** track (E-AC-3 JOC) | `.mkv`, and raw `.ec3` demo clips; also `.mp4` and the others above, not yet tested | Decoded once and cached. A file with both tracks uses TrueHD. See the note below. |
+| Movies with a **DTS:X** track | `.mkv` and `.m2ts`; also raw `.dts` and the others above, not yet tested | Decoded once and cached. A file that also has an Atmos track uses the Atmos one. See the note below. |
 | **Dolby Atmos master files** (DAMF) | `.atmos`, with its `.atmos.metadata` and `.atmos.audio` beside it | To see one with a film's picture, open the film first and then the `.atmos` (same length), or select both in **Open…** when they're in one folder. |
 
 **About Dolby Digital Plus.** DD+ carries Atmos as a 5.1 mix plus instructions for rebuilding the
@@ -71,7 +73,14 @@ DD+ decoding as experimental. Checked against Dolby's own encoder on a known tes
 object came back in the right place, and 90% of the time each speaker's level was within 2 dB of
 the original, with the ceiling speakers 1 to 2 dB low.
 
-Not supported: other immersive formats, such as DTS:X, Auro-3D or ADM BWF files.
+**About DTS:X.** The DTS:X tracks tried so far (Blu-ray demo clips) decode as a fixed 7.1.4:
+twelve speaker channels, four of them overhead, with no moving objects. They show as purple dots
+at the speaker positions, with the speakers lit by their levels. DTS names its four overhead
+channels for speakers high on the front and back walls. On a layout without those, each one plays
+on the nearest overhead speaker on its side (on 7.1.4, the four in the ceiling), the way a DTS:X
+receiver uses the height speakers it has.
+
+Not supported: other immersive formats, such as Auro-3D or ADM BWF files.
 
 ## Requirements
 
@@ -80,14 +89,14 @@ Not supported: other immersive formats, such as DTS:X, Auro-3D or ADM BWF files.
 - Windows 10 or 11, 64-bit.
 - A GPU that decodes 4K HEVC (any recent NVIDIA, AMD or Intel GPU) for smooth 4K playback.
 - Two free tools to install, needed to open movies. The third, **harletty** (the open decoder
-  that turns the Atmos track into objects; a fork of truehdd that adds Dolby Digital Plus), comes
-  with the app.
+  that turns the Atmos track into objects; a fork of truehdd that adds Dolby Digital Plus and
+  DTS:X), comes with the app.
 
 | Tool | Used for | How to get it |
 |---|---|---|
 | **ffmpeg** (with ffprobe) | Reading the movie and playing its picture | `winget install Gyan.FFmpeg` |
 | **MKVToolNix** (mkvextract) | Extracting the audio track from Matroska files | `winget install MoritzBunkus.MKVToolNix` |
-| **harletty** 0.9.0 | Decoding the Atmos track (TrueHD or DD+) into objects | Included, in `StreamingAssets/Tools/harletty` |
+| **harletty** 0.9.0 | Decoding the Atmos track (TrueHD or DD+) into objects, and DTS:X into its channels | Included, in `StreamingAssets/Tools/harletty` |
 
 The app looks for each tool in its settings file first, then among the tools that come with it,
 then on `PATH`, then in the tool's usual install folder (MKVToolNix in Program Files). If one is
@@ -215,5 +224,6 @@ each one needs.
 Apache License 2.0; see [LICENSE](LICENSE). Third-party components and their licenses are listed in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-"Dolby", "Dolby Atmos", "Dolby Digital Plus" and "TrueHD" are trademarks of Dolby Laboratories.
-This project is not affiliated with or endorsed by Dolby.
+"Dolby", "Dolby Atmos", "Dolby Digital Plus" and "TrueHD" are trademarks of Dolby Laboratories;
+"DTS" and "DTS:X" are trademarks of DTS, Inc. This project is not affiliated with or endorsed by
+either.

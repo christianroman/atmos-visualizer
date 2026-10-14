@@ -2,7 +2,7 @@
 // the 3D view and the UI each frame.
 //
 // Open... (one button):
-//   a movie (.mkv, ...)        audio: the Atmos track (TrueHD or DD+) is extracted and decoded once (cached);
+//   a movie (.mkv, ...)        audio: the Atmos (TrueHD or DD+) or DTS:X track is extracted and decoded once (cached);
 //                              video: the original, decoded live while it plays
 //   a .atmos master            its movie is found automatically if it came from the cache; otherwise,
 //                              opened while a film of the same length is showing, it keeps that
@@ -118,9 +118,9 @@ public sealed class AtmosApp : MonoBehaviour
         UI.OpenClicked += () =>
         {
             var files = NativeFileDialog.OpenFiles(
-                "Open a movie (MKV with a TrueHD or DD+ Atmos track) or a .atmos master - or a .atmos and a movie together",
+                "Open a movie (MKV with a Dolby Atmos or DTS:X track) or a .atmos master - or a .atmos and a movie together",
                 Dir(PlayerPrefs.GetString("lastOpenDir", "")),
-                "Movies and Atmos masters (*.mkv;*.m2ts;*.mp4;*.ec3;*.atmos)", "*.mkv;*.mka;*.m2ts;*.ts;*.mp4;*.m4v;*.mov;*.ec3;*.eac3;*.atmos",
+                "Movies and Atmos masters (*.mkv;*.m2ts;*.mp4;*.ec3;*.atmos)", "*.mkv;*.mka;*.m2ts;*.ts;*.mp4;*.m4v;*.mov;*.ec3;*.eac3;*.dts;*.atmos",
                 "All files (*.*)", "*.*");
             if (files.Length > 0) OpenAny(files);
         };
@@ -370,11 +370,14 @@ public sealed class AtmosApp : MonoBehaviour
         {
             UI.SetTitle(audioTitle);
             int objects = Damf.Objects.Count();
+            if (Damf.IsDtsX) m.MetadataKey = "DTS:X";
             m.Objects = objects + " dynamic object" + (objects == 1 ? "" : "s");
             var beds = Damf.Beds.Select(b => b.BedChannel).ToList();
             if (beds.Count > 0)
             {
-                int lfe = beds.Count(b => b == "LFE"), top = beds.Count(b => b == "Lts" || b == "Rts"), ear = beds.Count - lfe - top;
+                // overhead: Atmos's top pair, and DTS:X's front and rear heights
+                var overhead = new[] { "Lts", "Rts", "Lfh", "Rfh", "Lrh", "Rrh" };
+                int lfe = beds.Count(b => b == "LFE"), top = beds.Count(overhead.Contains), ear = beds.Count - lfe - top;
                 string shape = beds.Count <= 2 ? string.Join(" ", beds) : ear + "." + lfe + (top > 0 ? "." + top : "");
                 m.Beds = beds.Count + " bed channel" + (beds.Count == 1 ? "" : "s") + " (" + shape + ")";
             }

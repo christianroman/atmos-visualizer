@@ -146,14 +146,15 @@ public sealed class AtmosUI : MonoBehaviour
     // The media card: label/value rows. The first, "Atmos metadata", counts the objects and bed
     // channels next to dots in their 3D-view colours (white, purple), so it doubles as the legend.
     VisualElement metadataRow, bedPart, mediaRows;
-    Label objectsText, bedsText;
+    Label metadataKey, objectsText, bedsText;
     readonly List<(VisualElement row, Label key, Label value)> mediaRowViews = new List<(VisualElement, Label, Label)>();
 
     void BuildInfoCard()
     {
         var card = Panel("info");
         metadataRow = new VisualElement().WithClass("media-row");
-        metadataRow.Add(new Label("Atmos metadata").WithClass("media-key"));
+        metadataKey = new Label("Atmos metadata").WithClass("media-key");
+        metadataRow.Add(metadataKey);
         var value = new VisualElement().WithClass("media-value-row");
         value.Add(Dot("legend-dot--object"));
         objectsText = new Label("").WithClass("media-value");
@@ -242,7 +243,7 @@ public sealed class AtmosUI : MonoBehaviour
     {
         var t = Panel("transport");
         var open = Button("Open…", () => OpenClicked?.Invoke());
-        open.tooltip = "A movie (MKV with a TrueHD or DD+ Atmos track) or a .atmos master. A .atmos opened while a film of the same length is showing keeps the film's picture.";
+        open.tooltip = "A movie (MKV with a Dolby Atmos or DTS:X track) or a .atmos master. A .atmos opened while a film of the same length is showing keeps the film's picture.";
         open.AddToClassList("btn--primary");
         t.Add(open);
         t.Add(new VisualElement().WithClass("divider"));
@@ -416,7 +417,7 @@ public sealed class AtmosUI : MonoBehaviour
     {
         welcomePanel = Panel("welcome");
         welcomePanel.Add(new Label("Open a film to start").WithClass("subtitle"));
-        welcomePanel.Add(new Label("A movie with a Dolby Atmos track, TrueHD or DD+ (MKV), or a .atmos master. To see a .atmos mix with its film, open the film first, then the .atmos.").WithClass("hint"));
+        welcomePanel.Add(new Label("A movie with a Dolby Atmos (TrueHD or DD+) or DTS:X track (MKV), or a .atmos master. To see a .atmos mix with its film, open the film first, then the .atmos.").WithClass("hint"));
         var open = Button("Open…", () => OpenClicked?.Invoke());
         open.AddToClassList("btn--primary");
         open.AddToClassList("welcome-open");
@@ -503,6 +504,7 @@ public sealed class AtmosUI : MonoBehaviour
     {
         metadataRow.style.display = m.Objects != null ? DisplayStyle.Flex : DisplayStyle.None;
         bedPart.style.display = m.Beds != null ? DisplayStyle.Flex : DisplayStyle.None;
+        if (metadataKey.text != m.MetadataKey) metadataKey.text = m.MetadataKey;
         if (m.Objects != null && objectsText.text != m.Objects) objectsText.text = m.Objects;
         if (m.Beds != null && bedsText.text != m.Beds) bedsText.text = m.Beds;
         while (mediaRowViews.Count < m.Rows.Count)
@@ -756,6 +758,7 @@ static class UiExtensions
 public sealed class MediaSummary
 {
     public string Objects, Beds;
+    public string MetadataKey = "Atmos metadata";   // the legend line's label ("DTS:X" for DTS:X)
     public readonly List<KeyValuePair<string, string>> Rows = new List<KeyValuePair<string, string>>();
 
     public MediaSummary Add(string key, string value)
